@@ -42,32 +42,43 @@
         '$'
     );
 
-  const escapeHtml = (s) =>
-    String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
   function findRule(config) {
     const url = location.href;
     return (config.rules || []).find((r) => r.enabled !== false && globToRegex(r.match).test(url));
   }
 
+  // Built from DOM nodes and CSSOM styles (no HTML strings, no <style> tag) so strict CSP /
+  // Trusted Types sites like reddit can't block it.
   function showBlockPage(rule) {
     const message = rule.message || 'I committed to not use this site.';
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Blocked</title>
-<style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-       font:18px/1.5 system-ui,sans-serif;background:#111;color:#eee;text-align:center}
-  main{max-width:32rem;padding:2rem}
-  h1{font-size:2rem;margin:0 0 1rem}
-  p{opacity:.8}
-  code{background:#222;padding:.1em .4em;border-radius:4px}
-</style></head><body><main>
-  <h1>${escapeHtml(message)}</h1>
-  <p><code>${escapeHtml(location.hostname)}</code> is blocked by your Redirector rules.</p>
-</main></body></html>`;
-    window.stop();
-    document.open();
-    document.write(html);
-    document.close();
+    try {
+      window.stop();
+      const root = document.documentElement || document.appendChild(document.createElement('html'));
+      while (root.firstChild) root.removeChild(root.firstChild);
+      const head = document.createElement('head');
+      const title = document.createElement('title');
+      title.textContent = 'Blocked';
+      head.appendChild(title);
+      const body = document.createElement('body');
+      const set = (el, css) => Object.assign(el.style, css);
+      set(body, {
+        margin: '0', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        font: '18px/1.5 system-ui,sans-serif', background: '#111', color: '#eee', textAlign: 'center',
+      });
+      const main = document.createElement('main');
+      set(main, { maxWidth: '32rem', padding: '2rem' });
+      const h1 = document.createElement('h1');
+      h1.textContent = message;
+      set(h1, { fontSize: '2rem', margin: '0 0 1rem' });
+      const p = document.createElement('p');
+      p.textContent = location.hostname + ' is blocked by your Redirector rules.';
+      set(p, { opacity: '0.8' });
+      main.append(h1, p);
+      body.appendChild(main);
+      root.append(head, body);
+    } catch (e) {
+      console.warn('[Redirector] Could not render block page', e);
+    }
   }
 
   function apply(config) {
