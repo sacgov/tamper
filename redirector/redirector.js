@@ -89,7 +89,7 @@
     else showBlockPage(rule);
   }
 
-  function refresh() {
+  function refresh(done) {
     GM_xmlhttpRequest({
       method: 'GET',
       url: CONFIG_URL + '?t=' + Date.now(),
@@ -101,10 +101,16 @@
         } catch (e) {
           console.warn('[Redirector] Invalid config.json', e);
         }
+        if (done) done();
       },
-      onerror: () => console.warn('[Redirector] Could not fetch config'),
+      onerror: () => {
+        console.warn('[Redirector] Could not fetch config');
+        if (done) done();
+      },
     });
   }
+
+  GM_registerMenuCommand('Redirector: refresh rules now', () => refresh(() => location.reload()));
 
   let cached = null;
   try {

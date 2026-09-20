@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scripts Loader
 // @namespace    https://github.com/sacgov/tamper
-// @version      1.1.1
+// @version      1.1.2
 // @description  Loads the scripts listed in scripts.json from GitHub. Install once; add scripts by editing the registry.
 // @match        *://*/*
 // @run-at       document-start
