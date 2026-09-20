@@ -1,0 +1,11 @@
+{
+  "scripts": [
+    {
+      "name": "example-banner",
+      "path": "example/banner.js",
+      "match": ["*://example.com/*"],
+      "runAt": "document-idle",
+      "enabled": true
+    }
+  ]
+}

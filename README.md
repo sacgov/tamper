@@ -35,3 +35,22 @@ Create `<name>/<name>.user.js` with `@updateURL`/`@downloadURL` pointing at its 
 2. Set Chrome's Home button / startup page to that URL.
 
 Data stays in this browser only.
+
+## Scripts loader (add scripts without touching Tampermonkey)
+
+Install once: `https://raw.githubusercontent.com/sacgov/tamper/main/loader/loader.user.js`
+
+It reads `scripts.json` and runs every enabled entry whose `match` fits the page. To add a script:
+
+1. Put a plain `.js` file in the repo (not `.user.js`), e.g. `mything/mything.js`.
+2. Add an entry to `scripts.json`:
+   ```json
+   { "name": "mything", "path": "mything/mything.js", "match": ["*://example.com/*"], "runAt": "document-idle", "enabled": true }
+   ```
+   `runAt` is `document-start` or `document-idle` (default). Optional `exclude` patterns.
+3. Push. It applies within ~10 minutes, or use the Tampermonkey menu command "Loader: refresh scripts now".
+
+Notes:
+- Loaded scripts get `GM_getValue`, `GM_setValue`, `GM_deleteValue`, `GM_addStyle`, `GM_registerMenuCommand`, `GM_xmlhttpRequest` and `unsafeWindow` as variables. To use another GM API, add its `@grant` in the loader header and to `GM_API`, then bump `@version`.
+- The redirector stays a standalone userscript so it works on every page, including ones with strict CSP. Don't list it in `scripts.json`.
+- Sites with a strict Content-Security-Policy may block loaded scripts; check the console for `[Loader]` warnings.
