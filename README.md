@@ -6,13 +6,12 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 
 1. Repo: `git@github.com:sacgov/tamper.git` (branch `main`). The repo must be public so the raw URLs are reachable.
 2. Push changes: `git add . && git commit -m "..." && git push`.
-3. In Tampermonkey, install from the raw URL:
-   `https://raw.githubusercontent.com/sacgov/tamper/main/redirector/redirector.user.js`
+3. In Tampermonkey, install only the loader (see "Scripts loader" below). It loads the redirector and everything else from `scripts.json`.
 
 ## Updating
 
 - **Rules:** edit `redirector/config.json` and push. Applied within ~10 minutes (the script caches the config).
-- **Script code:** bump `@version` in the `.user.js` and push. Tampermonkey picks it up on its next update check.
+- **Script code:** push. Loaded scripts refresh within ~10 minutes. Only `loader/loader.user.js` itself needs an `@version` bump.
 
 ## Redirector rules
 
@@ -25,7 +24,7 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 
 ## Adding a script
 
-Create `<name>/<name>.user.js` with `@updateURL`/`@downloadURL` pointing at its raw URL.
+Add a plain `.js` file and a `scripts.json` entry (see below).
 
 ## Home dashboard
 
@@ -52,5 +51,5 @@ It reads `scripts.json` and runs every enabled entry whose `match` fits the page
 
 Notes:
 - Loaded scripts get `GM_getValue`, `GM_setValue`, `GM_deleteValue`, `GM_addStyle`, `GM_registerMenuCommand`, `GM_xmlhttpRequest` and `unsafeWindow` as variables. To use another GM API, add its `@grant` in the loader header and to `GM_API`, then bump `@version`.
-- The redirector stays a standalone userscript so it works on every page, including ones with strict CSP. Don't list it in `scripts.json`.
+- The redirector is loaded this way too (`runAt: document-start`). Don't also install a standalone copy, or attempts get logged twice.
 - Sites with a strict Content-Security-Policy may block loaded scripts; check the console for `[Loader]` warnings.

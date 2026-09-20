@@ -1,20 +1,4 @@
-// ==UserScript==
-// @name         Redirector
-// @namespace    https://github.com/sacgov/tamper
-// @version      1.1.0
-// @description  Redirect sites, or show a "you committed to not use this site" page. Rules live in config.json.
-// @match        *://*/*
-// @run-at       document-start
-// @noframes
-// @grant        GM_xmlhttpRequest
-// @grant        GM_getValue
-// @grant        GM_setValue
-// @grant        unsafeWindow
-// @connect      raw.githubusercontent.com
-// @updateURL    https://raw.githubusercontent.com/sacgov/tamper/main/redirector/redirector.user.js
-// @downloadURL  https://raw.githubusercontent.com/sacgov/tamper/main/redirector/redirector.user.js
-// ==/UserScript==
-
+// Loaded by loader/loader.user.js (runAt: document-start). GM_* and unsafeWindow are provided by the loader.
 (function () {
   'use strict';
 
