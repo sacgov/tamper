@@ -6,6 +6,11 @@
       "message": "I committed to not use this site."
     },
     {
+      "match": "*://*.lichess.org/*",
+      "action": "block",
+      "message": "I committed to not use this site."
+    },
+    {
       "match": "*://news.ycombinator.com/*",
       "action": "redirect",
       "target": "https://example.com/",
