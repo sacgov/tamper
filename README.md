@@ -4,11 +4,10 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 
 ## Setup (one time)
 
-1. Create a GitHub repo and push this folder (`git init && git add . && git commit -m init && git remote add origin ... && git push -u origin main`).
-2. Replace `YOUR_USER/YOUR_REPO` in `redirector/redirector.user.js` (header URLs and `CONFIG_URL`).
-   The repo must be public so the raw URLs are reachable.
+1. Repo: `git@github.com:sacgov/tamper.git` (branch `main`). The repo must be public so the raw URLs are reachable.
+2. Push changes: `git add . && git commit -m "..." && git push`.
 3. In Tampermonkey, install from the raw URL:
-   `https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/redirector/redirector.user.js`
+   `https://raw.githubusercontent.com/sacgov/tamper/main/redirector/redirector.user.js`
 
 ## Updating
 
@@ -27,4 +26,3 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 ## Adding a script
 
 Create `<name>/<name>.user.js` with `@updateURL`/`@downloadURL` pointing at its raw URL.
-# tamper

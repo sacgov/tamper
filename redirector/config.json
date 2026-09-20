@@ -1,0 +1,15 @@
+{
+  "rules": [
+    {
+      "match": "*://*.reddit.com/*",
+      "action": "block",
+      "message": "I committed to not use this site."
+    },
+    {
+      "match": "*://news.ycombinator.com/*",
+      "action": "redirect",
+      "target": "https://example.com/",
+      "enabled": false
+    }
+  ]
+}
