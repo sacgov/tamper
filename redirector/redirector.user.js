@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Redirector
 // @namespace    https://github.com/sacgov/tamper
-// @version      1.0.0
+// @version      1.1.0
 // @description  Redirect sites, or show a "you committed to not use this site" page. Rules live in config.json.
 // @match        *://*/*
 // @run-at       document-start
@@ -9,6 +9,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        unsafeWindow
 // @connect      raw.githubusercontent.com
 // @updateURL    https://raw.githubusercontent.com/sacgov/tamper/main/redirector/redirector.user.js
 // @downloadURL  https://raw.githubusercontent.com/sacgov/tamper/main/redirector/redirector.user.js
@@ -21,6 +22,29 @@
   const CACHE_KEY = 'redirector.config';
   const CACHE_TIME_KEY = 'redirector.fetchedAt';
   const MAX_AGE_MS = 10 * 60 * 1000;
+  const LOG_KEY = 'redirector.log';
+  const MAX_LOG = 5000;
+  const DASHBOARD_URL = 'https://sacgov.github.io/tamper/home/';
+
+  function readLog() {
+    try {
+      const log = JSON.parse(GM_getValue(LOG_KEY, '[]'));
+      return Array.isArray(log) ? log : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function logAttempt(rule) {
+    const log = readLog();
+    log.push({ t: Date.now(), host: location.hostname, url: location.href, action: rule.action, match: rule.match });
+    GM_setValue(LOG_KEY, JSON.stringify(log.slice(-MAX_LOG)));
+  }
+
+  // The dashboard page can't read Tampermonkey storage itself, so hand it the log.
+  function exposeToDashboard() {
+    unsafeWindow.__REDIRECTOR__ = { log: readLog(), clear: () => GM_setValue(LOG_KEY, '[]') };
+  }
 
   const globToRegex = (glob) =>
     new RegExp('^' + glob.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
@@ -56,6 +80,7 @@
   function apply(config) {
     const rule = config && findRule(config);
     if (!rule) return;
+    logAttempt(rule);
     if (rule.action === 'redirect' && rule.target) location.replace(rule.target);
     else showBlockPage(rule);
   }
@@ -81,6 +106,11 @@
   try {
     cached = JSON.parse(GM_getValue(CACHE_KEY, 'null'));
   } catch (e) {}
+
+  if (location.href.startsWith(DASHBOARD_URL)) {
+    exposeToDashboard();
+    return;
+  }
 
   // Apply cached config synchronously so blocking happens as early as possible.
   apply(cached);

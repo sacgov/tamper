@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Home</title>
+<style>
+  :root{--bg:#fafaf9;--fg:#1c1917;--muted:#78716c;--card:#fff;--line:#e7e5e4;--bad:#dc2626;--good:#16a34a}
+  @media (prefers-color-scheme:dark){:root{--bg:#131211;--fg:#f5f5f4;--muted:#a8a29e;--card:#1c1a19;--line:#2e2b29;--bad:#f87171;--good:#4ade80}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+  main{max-width:52rem;margin:0 auto;padding:2rem 1rem 4rem}
+  h1{font-size:1.5rem;margin:0 0 .25rem}
+  h2{font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:2rem 0 .75rem}
+  .sub{color:var(--muted);margin:0 0 1.5rem}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.75rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem}
+  .num{font-size:2rem;font-weight:700;line-height:1.1}
+  .lbl{color:var(--muted);font-size:.85rem}
+  .bad{color:var(--bad)}.good{color:var(--good)}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:120px}
+  .bar{flex:1;background:var(--bad);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}
+  .bar.zero{background:var(--good);opacity:.5}
+  .days{display:flex;gap:4px;color:var(--muted);font-size:.7rem}
+  .days span{flex:1;text-align:center}
+  ul{list-style:none;margin:0;padding:0}
+  li{display:flex;justify-content:space-between;gap:1rem;padding:.5rem 0;border-bottom:1px solid var(--line)}
+  li:last-child{border:0}
+  .t{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  button{font:inherit;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:.3rem .7rem;cursor:pointer}
+  #missing{display:none;padding:1rem;border:1px solid var(--bad);border-radius:10px}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="greet">Hello</h1>
+  <p class="sub">Your slip-ups, honestly tallied.</p>
+  <div id="missing">Redirector userscript not detected. Install it in Tampermonkey and reload this page.</div>
+  <div id="app" hidden>
+    <div class="stats">
+      <div class="card"><div class="num" id="streak"></div><div class="lbl">days clean</div></div>
+      <div class="card"><div class="num" id="today"></div><div class="lbl">attempts today</div></div>
+      <div class="card"><div class="num" id="week"></div><div class="lbl">last 7 days</div></div>
+      <div class="card"><div class="num" id="total"></div><div class="lbl">all time</div></div>
+    </div>
+    <h2>Last 14 days</h2>
+    <div class="card"><div class="bars" id="bars"></div><div class="days" id="days"></div></div>
+    <h2>Top sites</h2>
+    <div class="card"><ul id="top"></ul></div>
+    <h2>Recent</h2>
+    <div class="card"><ul id="recent"></ul></div>
+    <h2>Data</h2>
+    <button id="clear">Clear log</button>
+  </div>
+</main>
+<script>
+(function () {
+  const DAY = 86400000;
+  const startOfDay = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+  const $ = (id) => document.getElementById(id);
+
+  const h = new Date().getHours();
+  $('greet').textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+
+  function render() {
+    const api = window.__REDIRECTOR__;
+    if (!api) { $('missing').style.display = 'block'; return; }
+    $('app').hidden = false;
+    const log = api.log;
+    const today = startOfDay(Date.now());
+
+    const perDay = {};
+    log.forEach((e) => { const d = startOfDay(e.t); perDay[d] = (perDay[d] || 0) + 1; });
+
+    $('today').textContent = perDay[today] || 0;
+    $('total').textContent = log.length;
+    let week = 0;
+    for (let i = 0; i < 7; i++) week += perDay[today - i * DAY] || 0;
+    $('week').textContent = week;
+
+    const last = log.length ? startOfDay(log[log.length - 1].t) : null;
+    const streakEl = $('streak');
+    const streak = last === null ? 0 : Math.round((today - last) / DAY);
+    streakEl.textContent = streak;
+    streakEl.className = 'num ' + (streak > 0 ? 'good' : 'bad');
+
+    const counts = [];
+    for (let i = 13; i >= 0; i--) counts.push({ d: today - i * DAY, n: perDay[today - i * DAY] || 0 });
+    const max = Math.max(1, ...counts.map((c) => c.n));
+    $('bars').innerHTML = counts.map((c) =>
+      `<div class="bar${c.n ? '' : ' zero'}" style="height:${(c.n / max) * 100}%" title="${new Date(c.d).toDateString()}: ${c.n}"></div>`).join('');
+    $('days').innerHTML = counts.map((c) => `<span>${new Date(c.d).getDate()}</span>`).join('');
+
+    const bySite = {};
+    log.forEach((e) => { bySite[e.host] = (bySite[e.host] || 0) + 1; });
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const top = Object.entries(bySite).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    $('top').innerHTML = top.length ? top.map(([s, n]) => `<li><span>${esc(s)}</span><span class="t">${n}</span></li>`).join('') : '<li>Nothing yet. Keep it up.</li>';
+
+    const recent = log.slice(-15).reverse();
+    $('recent').innerHTML = recent.length ? recent.map((e) => `<li><span>${esc(e.host)}</span><span class="t">${new Date(e.t).toLocaleString()}</span></li>`).join('') : '<li>Nothing yet.</li>';
+  }
+
+  $('clear').onclick = () => {
+    if (window.__REDIRECTOR__ && confirm('Clear the whole log?')) { window.__REDIRECTOR__.clear(); window.__REDIRECTOR__.log = []; render(); }
+  };
+  render();
+})();
+</script>
+</body>
+</html>

@@ -26,3 +26,12 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 ## Adding a script
 
 Create `<name>/<name>.user.js` with `@updateURL`/`@downloadURL` pointing at its raw URL.
+
+## Home dashboard
+
+`home/index.html` shows your logged attempts (streak, 14-day chart, top sites, recent). The redirector logs every block/redirect to Tampermonkey storage and hands the log to the page at `https://sacgov.github.io/tamper/home/`.
+
+1. Enable GitHub Pages: repo Settings → Pages → Deploy from branch `main`, folder `/ (root)`.
+2. Set Chrome's Home button / startup page to that URL.
+
+Data stays in this browser only.
