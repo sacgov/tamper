@@ -1,4 +1,5 @@
-// Loaded by loader/loader.user.js (runAt: document-start). GM_* and unsafeWindow are provided by the loader.
+// Pulled into loader/loader.user.js via @require (not eval'd, so strict-CSP sites like reddit work).
+// GM_* and unsafeWindow come from the loader's grants.
 (function () {
   'use strict';
 
@@ -30,8 +31,16 @@
     unsafeWindow.__REDIRECTOR__ = { log: readLog(), clear: () => GM_setValue(LOG_KEY, '[]') };
   }
 
+  // `*://*.x.com/*` also matches the bare `x.com`.
   const globToRegex = (glob) =>
-    new RegExp('^' + glob.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
+    new RegExp(
+      '^' +
+        glob
+          .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+          .replace(/\*/g, '.*')
+          .replace('://.*\\.', '://(?:.*\\.)?') +
+        '$'
+    );
 
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

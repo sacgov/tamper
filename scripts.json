@@ -1,15 +1,6 @@
 {
   "scripts": [
     {
-      "name": "redirector",
-      "path": "redirector/redirector.js",
-      "match": [
-        "*://*/*"
-      ],
-      "runAt": "document-start",
-      "enabled": true
-    },
-    {
       "name": "example-banner",
       "path": "example/banner.js",
       "match": [

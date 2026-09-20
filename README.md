@@ -11,7 +11,7 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 ## Updating
 
 - **Rules:** edit `redirector/config.json` and push. Applied within ~10 minutes (the script caches the config).
-- **Script code:** push. Loaded scripts refresh within ~10 minutes. Only `loader/loader.user.js` itself needs an `@version` bump.
+- **Script code:** push. Loaded scripts refresh within ~10 minutes. Bump `@version` in `loader/loader.user.js` when you change it or `redirector/redirector.js`.
 
 ## Redirector rules
 
@@ -51,5 +51,6 @@ It reads `scripts.json` and runs every enabled entry whose `match` fits the page
 
 Notes:
 - Loaded scripts get `GM_getValue`, `GM_setValue`, `GM_deleteValue`, `GM_addStyle`, `GM_registerMenuCommand`, `GM_xmlhttpRequest` and `unsafeWindow` as variables. To use another GM API, add its `@grant` in the loader header and to `GM_API`, then bump `@version`.
-- The redirector is loaded this way too (`runAt: document-start`). Don't also install a standalone copy, or attempts get logged twice.
+- The redirector is not in `scripts.json`. The loader pulls it in with `@require`, because sites with a strict CSP (reddit) block the loader's run-downloaded-code step. Its rules (`config.json`) still update every ~10 minutes, but a change to `redirector.js` itself needs a loader `@version` bump. Don't also install a standalone copy, or attempts get logged twice.
+- Scripts in `scripts.json` are subject to that CSP limit; a `[Loader] ... EvalError` in the console means the site blocked one.
 - Sites with a strict Content-Security-Policy may block loaded scripts; check the console for `[Loader]` warnings.
