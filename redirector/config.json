@@ -1,11 +1,6 @@
 {
   "rules": [
     {
-      "match": "*://*.reddit.com/*",
-      "action": "block",
-      "message": "I committed to not use this site."
-    },
-    {
       "match": "*://*.lichess.org/*",
       "action": "block",
       "message": "I committed to not use this site."

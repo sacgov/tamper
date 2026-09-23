@@ -16,7 +16,7 @@ Userscripts for [Tampermonkey](https://www.tampermonkey.net/). Push this folder 
 ## Redirector rules
 
 ```json
-{ "match": "*://*.reddit.com/*", "action": "block", "message": "I committed to not use this site." }
+{ "match": "*://*.lichess.org/*", "action": "block", "message": "I committed to not use this site." }
 { "match": "*://example.com/*",  "action": "redirect", "target": "https://example.org/" }
 ```
 

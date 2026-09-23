@@ -1,0 +1,5 @@
+#!/bin/sh
+# Validate JSON config files before every commit.
+for f in redirector/config.json scripts.json; do
+  python3 -m json.tool "$f" >/dev/null || { echo "pre-commit: invalid JSON in $f" >&2; exit 1; }
+done
